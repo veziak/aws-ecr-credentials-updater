@@ -130,7 +130,7 @@ def login_into_ecr() -> tuple[str, str, str]:
     except (APIError, TLSParameterError) as err:
         logging.error(f"Failed to login into ECR: {err}")
         return None
-    return (registry, username, password)
+    return registry, username, password
 
 
 def main():
@@ -143,9 +143,11 @@ def main():
     except Exception as e:
         logging.error(f"Failed to login into ECR: {e}")
 
+    registry, username, password = result
+
     # load cluster config from ~/.kube/config
     config.load_kube_config()
-    required_env_vars = ["NAMESPACE", "SECRET_NAME", "REGISTRY", "USERNAME", "PASSWORD"]
+    required_env_vars = ["NAMESPACE", "SECRET_NAME"]
 
     for ev in required_env_vars:
         if os.environ.get(ev) is None:
@@ -154,9 +156,6 @@ def main():
 
     namespace = os.environ.get("NAMESPACE")
     secret_name = os.environ.get("SECRET_NAME")
-    registry = os.environ.get("REGISTRY")
-    username = os.environ.get("USERNAME")
-    password = os.environ.get("PASSWORD")
 
     v1 = client.CoreV1Api()
     try:
