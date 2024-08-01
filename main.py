@@ -138,7 +138,7 @@ def main():
 
     try:
         result = login_into_ecr()
-        if not result:
+        if result is None:
             return 1
     except Exception as e:
         logging.error(f"Failed to login into ECR: {e}")
