@@ -112,14 +112,14 @@ def login_into_ecr() -> tuple[str, str, str]:
         logging.info(f"Successfully logged into AWS account {account_id}")
     except ClientError as error:
         logging.error("Failed to get caller identity", error)
-        return None
+        raise error
 
     ecr_client = boto3.client("ecr")
     try:
         auth_response = ecr_client.get_authorization_token()
     except ClientError as error:
         logging.error("Failed to get authorization token", error)
-        return None
+        raise error
 
     auth_token = auth_response["authorizationData"][0]["authorizationToken"].encode()
     username, password = base64.b64decode(auth_token).decode().split(":")
@@ -127,11 +127,11 @@ def login_into_ecr() -> tuple[str, str, str]:
 
     try:
         client = docker.from_env()
-        result = client.login(username=username, password=password, registry=registry)
+        client.login(username=username, password=password, registry=registry)
         logging.info(f"Successfully logged into ecr docker registry {registry}")
     except (APIError, TLSParameterError) as err:
         logging.error(f"Failed to login into ECR: {err}")
-        return None
+        raise err
     return registry, username, password
 
 
@@ -141,11 +141,9 @@ def main():
     result = None
     try:
         result = login_into_ecr()
-        if result is None:
-            return 1
     except Exception as e:
         logging.error(f"Failed to login into ECR: {e}")
-
+        return 1
     registry, username, password = result
 
     # load cluster config from ~/.kube/config
