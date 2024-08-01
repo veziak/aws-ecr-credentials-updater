@@ -143,7 +143,7 @@ def main():
         result = login_into_ecr()
     except Exception as e:
         logging.error(f"Failed to login into ECR: {e}")
-        return 1
+        exit(1)
     registry, username, password = result
 
     # load cluster config from ~/.kube/config
@@ -153,7 +153,7 @@ def main():
     for ev in required_env_vars:
         if os.environ.get(ev) is None:
             logging.error(f"Environment variable {ev} haven't been set.")
-            return 1
+            exit(1)
 
     namespace = os.environ.get("NAMESPACE")
     secret_name = os.environ.get("SECRET_NAME")
@@ -176,7 +176,7 @@ def main():
             logging.error(
                 f"Failed to set secret '{secret_name}' value in '{namespace}' namespace"
             )
-            return 1
+            exit(1)
 
 
 if __name__ == "__main__":
