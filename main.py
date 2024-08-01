@@ -11,6 +11,7 @@ from docker.errors import APIError, TLSParameterError
 from kubernetes import client, config
 from kubernetes.client import ApiException, CoreV1Api, V1Secret
 from requests import HTTPError
+from tenacity import retry, stop_after_delay
 
 
 def update_docker_credentials_secret(
@@ -103,6 +104,7 @@ def _get_docker_secret_encoded_string(
     return docker_config
 
 
+@retry(stop=stop_after_delay(60))
 def login_into_ecr() -> tuple[str, str, str]:
     try:
         sts_client = boto3.client("sts")
@@ -136,6 +138,7 @@ def login_into_ecr() -> tuple[str, str, str]:
 def main():
     logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
+    result = None
     try:
         result = login_into_ecr()
         if result is None:
