@@ -1,5 +1,6 @@
 FROM python:3.12-alpine
 RUN mkdir /app
+WORKDIR /app
 COPY main.py /app/main.py
 COPY requirements.txt /app/requirements.txt
 
