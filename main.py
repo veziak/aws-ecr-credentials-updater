@@ -137,7 +137,7 @@ def login_into_ecr() -> tuple[str, str, str]:
     username, password = base64.b64decode(auth_token).decode().split(":")
     registry = auth_response["authorizationData"][0]["proxyEndpoint"]
 
-    #_docker_login(username, password, registry)
+    # _docker_login(username, password, registry)
     logging.info(f"Successfully logged into ecr docker registry {registry}")
 
     return registry, username, password
@@ -154,8 +154,7 @@ def main():
         exit(1)
     registry, username, password = result
 
-    # load cluster config from ~/.kube/config
-    config.load_kube_config()
+    config.load_incluster_config()
     required_env_vars = ["NAMESPACE", "SECRET_NAME"]
 
     for ev in required_env_vars:
