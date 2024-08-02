@@ -112,6 +112,9 @@ def _docker_login(username: str, password: str, registry: str):
     except (APIError, TLSParameterError) as err:
         logging.error(f"Failed to login into ECR: {err}")
         raise err
+    except Exception as e:
+        logging.error(f"Exception: {e}")
+        raise e
 
 
 def login_into_ecr() -> tuple[str, str, str]:
