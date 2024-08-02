@@ -104,7 +104,7 @@ def _get_docker_secret_encoded_string(
     return docker_config
 
 
-@retry(stop=stop_after_delay(60*10), wait=wait_fixed(10))
+@retry(stop=stop_after_delay(60 * 10), wait=wait_fixed(10))
 def _docker_login(username: str, password: str, registry: str):
     try:
         client = docker.from_env()
@@ -112,6 +112,7 @@ def _docker_login(username: str, password: str, registry: str):
     except (APIError, TLSParameterError) as err:
         logging.error(f"Failed to login into ECR: {err}")
         raise err
+
 
 def login_into_ecr() -> tuple[str, str, str]:
     try:
