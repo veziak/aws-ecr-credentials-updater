@@ -11,7 +11,7 @@ from docker.errors import APIError, TLSParameterError
 from kubernetes import client, config
 from kubernetes.client import ApiException, CoreV1Api, V1Secret
 from requests import HTTPError
-from tenacity import retry, stop_after_delay
+from tenacity import retry, stop_after_delay, wait_fixed
 
 
 def update_docker_credentials_secret(
@@ -104,7 +104,15 @@ def _get_docker_secret_encoded_string(
     return docker_config
 
 
-@retry(stop=stop_after_delay(60))
+@retry(stop=stop_after_delay(60*10), wait=wait_fixed(10))
+def _docker_login(username: str, password: str, registry: str):
+    try:
+        client = docker.from_env()
+        client.login(username=username, password=password, registry=registry)
+    except (APIError, TLSParameterError) as err:
+        logging.error(f"Failed to login into ECR: {err}")
+        raise err
+
 def login_into_ecr() -> tuple[str, str, str]:
     try:
         sts_client = boto3.client("sts")
@@ -125,13 +133,9 @@ def login_into_ecr() -> tuple[str, str, str]:
     username, password = base64.b64decode(auth_token).decode().split(":")
     registry = auth_response["authorizationData"][0]["proxyEndpoint"]
 
-    try:
-        client = docker.from_env()
-        client.login(username=username, password=password, registry=registry)
-        logging.info(f"Successfully logged into ecr docker registry {registry}")
-    except (APIError, TLSParameterError) as err:
-        logging.error(f"Failed to login into ECR: {err}")
-        raise err
+    _docker_login(username, password, registry)
+    logging.info(f"Successfully logged into ecr docker registry {registry}")
+
     return registry, username, password
 
 
