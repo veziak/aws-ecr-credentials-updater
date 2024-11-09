@@ -1,4 +1,4 @@
-FROM python:3.12-alpine
+FROM python:3.13-alpine
 RUN mkdir /app
 WORKDIR /app
 COPY main.py /app/main.py
